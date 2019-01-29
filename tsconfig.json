@@ -16,8 +16,5 @@
       "es2017",
       "esnext.asynciterable"
     ]
-  },
-  "exclude": [
-    "dist"
-  ]
+  }
 }

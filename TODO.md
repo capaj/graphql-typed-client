@@ -8,3 +8,4 @@
   - ability to map custom scalars to specific TS types
   - ability to automatically deserialize custom scalars (e.g. DateTime to moment() instance)
 - switch from `request` to `fetch`?
+- increase depth for `ofType` resolution

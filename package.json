@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf ./dist && tsc && chmod +x ./dist/cli.js",
-    "prepublish": "yarn build",
+    "prepublishOnly": "yarn build && jest",
     "test": "yarn build && jest"
   },
   "bin": {

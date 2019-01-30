@@ -10,44 +10,56 @@ const typenameField: FieldDef = {
     kind: Kind.NON_NULL,
     ofType: {
       kind: Kind.SCALAR,
-      name: 'String',
-    },
-  },
+      name: 'String'
+    }
+  }
 }
 
 export class InterfaceType extends Type {
   get interfaces() {
-    return (this.data.interfaces || []).map(type => this.schema.resolveType(type))
+    return (this.data.interfaces || []).map((type) =>
+      this.schema.resolveType(type)
+    )
   }
 
   get fields() {
-    return (this.data.fields || []).concat([typenameField]).map(field => new Field(field, this.schema))
+    return (this.data.fields || [])
+      .concat([typenameField])
+      .map((field) => new Field(field, this.schema))
   }
 
   get possibleTypes() {
-    return (this.data.possibleTypes || []).map(type => this.schema.resolveType(type))
+    return (this.data.possibleTypes || []).map((type) =>
+      this.schema.resolveType(type)
+    )
   }
 
   toTSType() {
     const interfaceFields = this.interfaces
-      .map(i => i.fields.map(f => f.name))
+      .map((i) => i.fields.map((f) => f.name))
       .reduce((r, i) => r.concat(i), [])
 
-    const newFields = this.fields.filter(f => !~interfaceFields.indexOf(f.name))
+    const newFields = this.fields.filter(
+      (f) => !~interfaceFields.indexOf(f.name)
+    )
 
-    const fieldStrings = newFields.map(f => `${f.name}${f.type.underlying.typing}`)
+    const fieldStrings = newFields.map(
+      (f) => `${f.name}${f.type.underlying.typing}`
+    )
 
-    const interfaceNames = this.interfaces.map(i => i.name).join(',')
+    const interfaceNames = this.interfaces.map((i) => i.name).join(',')
 
-    return `export interface ${this.name}${interfaceNames ? ` extends ${interfaceNames}` : ''} {${fieldStrings.join(',')}}`
+    return `export interface ${this.name}${
+      interfaceNames ? ` extends ${interfaceNames}` : ''
+    } {${fieldStrings.join(',')}}`
   }
 
   toRequestTSType() {
-    const fieldStrings = this.fields.map(f => {
+    const fieldStrings = this.fields.map((f) => {
       const types = []
       const resolvedType = f.type.underlying.type
       const resolvable = !~[Kind.ENUM, Kind.SCALAR].indexOf(resolvedType.kind)
-      const argsPresent = (f.args.length > 0)
+      const argsPresent = f.args.length > 0
       const argsString = f.argsString
       const argsOptional = !argsString.match(/[^?]:/)
 
@@ -71,8 +83,8 @@ export class InterfaceType extends Type {
     })
 
     this.possibleTypes
-      .map(t => `on_${t.name}?:${t.requestName}`)
-      .forEach(s => fieldStrings.push(s))
+      .map((t) => `on_${t.name}?:${t.requestName}`)
+      .forEach((s) => fieldStrings.push(s))
 
     fieldStrings.push('__scalar?:boolean|number')
 

@@ -12,8 +12,9 @@ the query and its response are fully type-annotated
 ![](https://i.gyazo.com/5f0255b59f0f9c7eebdbe6c077e39cb0.gif)
 
 The JS query is then converted to the GraphQL query and variables
+
 ```graphql
-query ($v1: String!, $v2: SearchType!, $v3: Int) {
+query($v1: String!, $v2: SearchType!, $v3: Int) {
   search(query: $v1, type: $v2, first: $v3) {
     nodes {
       ... on Repository {
@@ -31,6 +32,7 @@ query ($v1: String!, $v2: SearchType!, $v3: Int) {
   }
 }
 ```
+
 ```json
 { "v1": "graphql", "v2": "REPOSITORY", "v3": 5 }
 ```
@@ -44,10 +46,11 @@ to the `SubscriptionClient` so that a connection is opened when you subscribe to
 shared among all subscriptions and closed when you unsubscribe from the last one.
 
 Notes on type annotation generation
+
 - all known Scalar types are converted to their Typescript counterparts
 - all unknown Scalar types are converted to type aliases for `any`
 - all Enum types are converted to Typescript enums, so you can import and use them in your code
-(even if you're not using Typescript)
+  (even if you're not using Typescript)
 
 ## Install
 
@@ -59,18 +62,21 @@ yarn global add graphql-typed-client
 ## Generate the client
 
 To generate the client, run the command
+
 ```bash
 generate-graphql-client http://my-server/graphql ./my-client
 ```
+
 The tool learns about the specified GraphQL endpoint by making a GET request with a schema introspection query
 
 If the endpoint only listens to POST requests or if it requires authorization, you can handle this by supplying
 a file with a function which should return the options for making a [`request`](https://github.com/request/request)
 
 For example, to generate a client for GitHub GraphQL API, you need to create a file like this:
+
 ```js
 // githubClientQuery.js
-module.exports = function (query, endpoint) {
+module.exports = function(query, endpoint) {
   return {
     method: 'GET',
     uri: endpoint,
@@ -78,12 +84,14 @@ module.exports = function (query, endpoint) {
     json: true,
     headers: {
       'User-Agent': 'My-GitHub-App',
-      'Authorization': 'bearer YOUR_GITHUB_API_TOKEN',
-    },
+      Authorization: 'bearer YOUR_GITHUB_API_TOKEN'
+    }
   }
 }
 ```
+
 then run the command
+
 ```bash
 generate-graphql-client https://api.github.com/graphql ./github-client ./githubClientQuery.js
 ```
@@ -103,21 +111,21 @@ export const myClient = GqlClient(
     body: { query, variables },
     json: true,
     headers: {
-      'Authorization': 'bearer MY_API_TOKEN',
-    },
+      Authorization: 'bearer MY_API_TOKEN'
+    }
   }),
-  // if you want to enable GraphQL Subscriptions, provide the options object 
-  // for instantiating an Apollo's `SubscriptionClient` 
+  // if you want to enable GraphQL Subscriptions, provide the options object
+  // for instantiating an Apollo's `SubscriptionClient`
   // (https://github.com/apollographql/subscriptions-transport-ws)
   // P.S. `reconnect` and `lazy` options are already enabled by default
   {
     uri: 'ws://my-server/graphql-subscriptions-endpoint',
     options: {
       connectionParams: {
-        token: 'MY_API_TOKEN',
-      },
-    },
-  },
+        token: 'MY_API_TOKEN'
+      }
+    }
+  }
 )
 ```
 
@@ -126,48 +134,59 @@ export const myClient = GqlClient(
 ```js
 import { myClient } from './clients'
 
-myClient.query(GQL_QUERY) // => Promise<{ data?: Query, errors?: any[] }>
-  .then(console.log)
-  
-myClient.mutation(GQL_MUTATION) // => Promise<{ data?: Mutation, errors?: any[] }>
+myClient
+  .query(GQL_QUERY) // => Promise<{ data?: Query, errors?: any[] }>
   .then(console.log)
 
-myClient.subscription(GQL_SUBSCRIPTION) // => Observable<{ data?: Subscription, errors?: any[] }>
+myClient
+  .mutation(GQL_MUTATION) // => Promise<{ data?: Mutation, errors?: any[] }>
+  .then(console.log)
+
+myClient
+  .subscription(GQL_SUBSCRIPTION) // => Observable<{ data?: Subscription, errors?: any[] }>
   .subscribe({
     next: console.log
   })
 ```
+
 `GQL_QUERY`/`GQL_MUTATION`/`GQL_SUBSCRIPTION` is the object that will be converted into GraphQL request.
 Here is an example, to showcase the format:
+
 ```js
 myClient.query({
   // object field with arguments
-  user: [{ id: 'USER_ID' }, {
-    // scalar field
-    username: 1,
-    email: 1,
-    // scalar field with arguments
-    wasEmployed: [{ recently: true }],
-    // object field without arguments
-    friends: {
+  user: [
+    { id: 'USER_ID' },
+    {
+      // scalar field
       username: 1,
       email: 1,
-    },
-    posts: [{ limit: 5 }, {
-      // automatically request all scalar fields
-      __scalar: 1,
-    }],
-    pets: {
-      name: 1,
-      // fragment to request a fields in a specific type on Union or Interface types
-      on_Cat: {
-        eyeColor: 1,
+      // scalar field with arguments
+      wasEmployed: [{ recently: true }],
+      // object field without arguments
+      friends: {
+        username: 1,
+        email: 1
       },
-      on_Snake: {
-        length: 1,
-      },
-    },
-  }],
+      posts: [
+        { limit: 5 },
+        {
+          // automatically request all scalar fields
+          __scalar: 1
+        }
+      ],
+      pets: {
+        name: 1,
+        // fragment to request a fields in a specific type on Union or Interface types
+        on_Cat: {
+          eyeColor: 1
+        },
+        on_Snake: {
+          length: 1
+        }
+      }
+    }
+  ]
 })
 ```
 
@@ -179,40 +198,43 @@ import { SearchType } from './github-client/types'
 
 const GITHUB_TOKEN = 'YOUR_GITHUB_API_TOKEN'
 
-const client = GqlClient(gql => ({
+const client = GqlClient((gql) => ({
   uri: 'https://api.github.com/graphql',
   method: 'POST',
   body: gql,
   json: true,
   headers: {
     'User-Agent': 'My-GitHub-App',
-    'Authorization': `bearer ${GITHUB_TOKEN}`,
-  },
+    Authorization: `bearer ${GITHUB_TOKEN}`
+  }
 }))
 
 async function main() {
   const response = await client.query({
-    search: [{
-      query: 'graphql',
-      // generated enum type
-      type: SearchType.REPOSITORY,
-      first: 5,
-    }, {
-      nodes: {
-        on_Repository: {
-          name: 1,
-          owner: {
-            __typename: 1,
-            on_User: {
-              name: 1,
-            },
-            on_Organization: {
-              name: 1,
-            },
-          },
-        },
+    search: [
+      {
+        query: 'graphql',
+        // generated enum type
+        type: SearchType.REPOSITORY,
+        first: 5
       },
-    }],
+      {
+        nodes: {
+          on_Repository: {
+            name: 1,
+            owner: {
+              __typename: 1,
+              on_User: {
+                name: 1
+              },
+              on_Organization: {
+                name: 1
+              }
+            }
+          }
+        }
+      }
+    ]
   })
 
   if (response.data) {
@@ -224,6 +246,7 @@ async function main() {
 
 main().catch(console.log)
 ```
+
 ```bash
 RESULTS [ { name: 'graphql',
     owner: { __typename: 'Organization', name: 'Facebook' } },

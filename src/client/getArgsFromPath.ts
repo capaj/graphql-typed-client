@@ -1,6 +1,10 @@
 import { ArgMap, SchemaSpec } from './getSchemaSpec'
 
-export const getArgsFromPath = (schemaSpec: SchemaSpec, root: string, path: string[]) => {
+export const getArgsFromPath = (
+  schemaSpec: SchemaSpec,
+  root: string,
+  path: string[]
+) => {
   let t = root
   let found: ArgMap | undefined
 

@@ -23,12 +23,10 @@ export class Schema {
     [Kind.ENUM]: EnumType,
     [Kind.INPUT_OBJECT]: InputObjectType,
     [Kind.LIST]: ListType,
-    [Kind.NON_NULL]: NonNullType,
+    [Kind.NON_NULL]: NonNullType
   }
 
-  constructor(
-    protected readonly data: SchemaDef,
-  ) {
+  constructor(protected readonly data: SchemaDef) {
     this.typeMap = data.types.reduce((result, type) => {
       if (type.name) {
         result[type.name] = this.resolveType(type)
@@ -47,11 +45,13 @@ export class Schema {
   }
 
   get subscriptionType() {
-    return this.data.subscriptionType && this.resolveType(this.data.subscriptionType)
+    return (
+      this.data.subscriptionType && this.resolveType(this.data.subscriptionType)
+    )
   }
 
   get types() {
-    return this.data.types.map(type => this.resolveType(type))
+    return this.data.types.map((type) => this.resolveType(type))
   }
 
   resolveType(type: TypeDef): Type {

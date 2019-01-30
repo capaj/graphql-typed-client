@@ -8,53 +8,61 @@ import rimraf from 'rimraf'
 import { request } from './request'
 import { Schema } from '../types/Schema'
 
-type RequestOptionsFn = (query: string, endpoint: string) => CoreOptions & UriOptions
+type RequestOptionsFn = (
+  query: string,
+  endpoint: string
+) => CoreOptions & UriOptions
 
 const defaultRequestOptionsFn: RequestOptionsFn = (query, endpoint) => ({
   method: 'GET',
   uri: endpoint,
   qs: { query },
-  json: true,
+  json: true
 })
 
-const prettify = (code: string): string => prettier.format(code, {
-  parser: 'typescript',
-  semi: false,
-  singleQuote: true,
-  trailingComma: 'all',
-})
+const prettify = (code: string): string =>
+  prettier.format(code, {
+    parser: 'typescript',
+    semi: false,
+    singleQuote: true,
+    trailingComma: 'all'
+  })
 
 export const generateClient = async (
   endpoint: string,
   outputDir: string,
-  requestOptionsFn: RequestOptionsFn = defaultRequestOptionsFn,
+  requestOptionsFn: RequestOptionsFn = defaultRequestOptionsFn
 ) => {
-  const query = fs.readFileSync(path.resolve(__dirname, '../../queries/schemaQuery.graphql')).toString()
-  const clientTemplate = fs.readFileSync(path.resolve(__dirname, '../../dist/templates/GqlClient.js')).toString()
-  const clientTypingsTemplate = fs.readFileSync(path.resolve(__dirname, '../../dist/templates/GqlClient.d.ts')).toString()
+  const query = fs
+    .readFileSync(path.resolve(__dirname, '../../queries/schemaQuery.graphql'))
+    .toString()
+  const clientTemplate = fs
+    .readFileSync(path.resolve(__dirname, '../../dist/templates/GqlClient.js'))
+    .toString()
+  const clientTypingsTemplate = fs
+    .readFileSync(
+      path.resolve(__dirname, '../../dist/templates/GqlClient.d.ts')
+    )
+    .toString()
   const packageName = require('../../package.json').name
 
   const response = await request(requestOptionsFn(query, endpoint))
 
   if (!response.data || !response.data.__schema) {
-    console.log(`Invalid response from endpoint:\n${JSON.stringify(response, null, 2)}`)
+    console.log(
+      `Invalid response from endpoint:\n${JSON.stringify(response, null, 2)}`
+    )
     return
   }
 
   const schema = new Schema(response.data.__schema)
 
   const results = [
-    ...schema
-      .types
-      .map(t => t.toTSType()),
-    ...schema
-      .types
-      .map(t => t.toRequestTSType()),
+    ...schema.types.map((t) => t.toTSType()),
+    ...schema.types.map((t) => t.toRequestTSType())
   ]
 
-  let types = results
-    .filter(i => i)
-    .join('\n\n')
+  let types = results.filter((i) => i).join('\n\n')
 
   const client = clientTemplate
     .split('require("..")')
@@ -63,10 +71,11 @@ export const generateClient = async (
   let clientTypeImports = []
   let clientTyping = clientTypingsTemplate
     .split('\n')
-    .filter(l =>
-      !~l.indexOf('declare type QUERY') &&
-      !~l.indexOf('declare type MUTATION') &&
-      !~l.indexOf('declare type SUBSCRIPTION'),
+    .filter(
+      (l) =>
+        !~l.indexOf('declare type QUERY') &&
+        !~l.indexOf('declare type MUTATION') &&
+        !~l.indexOf('declare type SUBSCRIPTION')
     )
     .join('\n')
 
@@ -77,10 +86,7 @@ export const generateClient = async (
       .split('QUERY_REQUEST_T')
       .join(schema.queryType.requestName)
 
-    clientTypeImports.push(
-      schema.queryType.name,
-      schema.queryType.requestName,
-    )
+    clientTypeImports.push(schema.queryType.name, schema.queryType.requestName)
   } else {
     clientTyping = clientTyping
       .split('QUERY_T')
@@ -98,7 +104,7 @@ export const generateClient = async (
 
     clientTypeImports.push(
       schema.mutationType.name,
-      schema.mutationType.requestName,
+      schema.mutationType.requestName
     )
   } else {
     clientTyping = clientTyping
@@ -117,7 +123,7 @@ export const generateClient = async (
 
     clientTypeImports.push(
       schema.subscriptionType.name,
-      schema.subscriptionType.requestName,
+      schema.subscriptionType.requestName
     )
   } else {
     clientTyping = clientTyping
@@ -137,6 +143,12 @@ export const generateClient = async (
   mkdirp.sync(path.resolve(outputDir))
   fs.writeFileSync(path.resolve(outputDir, './types.ts'), prettify(types))
   fs.writeFileSync(path.resolve(outputDir, './GqlClient.js'), prettify(client))
-  fs.writeFileSync(path.resolve(outputDir, './GqlClient.d.ts'), prettify(clientTyping))
-  fs.writeFileSync(path.resolve(outputDir, './schema.json'), JSON.stringify(response.data.__schema))
+  fs.writeFileSync(
+    path.resolve(outputDir, './GqlClient.d.ts'),
+    prettify(clientTyping)
+  )
+  fs.writeFileSync(
+    path.resolve(outputDir, './schema.json'),
+    JSON.stringify(response.data.__schema)
+  )
 }

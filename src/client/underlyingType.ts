@@ -4,13 +4,15 @@ export const underlyingType = (t: TypeDef) => {
   let current = t
   let kinds = []
 
-  for (; ;) {
+  for (;;) {
     kinds.push(current.kind)
 
     if (!~[Kind.LIST, Kind.NON_NULL].indexOf(current.kind)) {
       const list = !!~kinds.indexOf(Kind.LIST)
-      const listNotNullable = list && kinds[kinds.indexOf(Kind.LIST) - 1] === Kind.NON_NULL
-      const valueNotNullable = kinds[kinds.indexOf(current.kind) - 1] === Kind.NON_NULL
+      const listNotNullable =
+        list && kinds[kinds.indexOf(Kind.LIST) - 1] === Kind.NON_NULL
+      const valueNotNullable =
+        kinds[kinds.indexOf(current.kind) - 1] === Kind.NON_NULL
 
       return {
         list,
@@ -18,8 +20,10 @@ export const underlyingType = (t: TypeDef) => {
         valueNotNullable,
         type: current,
         typing: list
-          ? `[${current.name}${valueNotNullable ? '!' : ''}]${listNotNullable ? '!' : ''}`
-          : `${current.name}${valueNotNullable ? '!' : ''}`,
+          ? `[${current.name}${valueNotNullable ? '!' : ''}]${
+              listNotNullable ? '!' : ''
+            }`
+          : `${current.name}${valueNotNullable ? '!' : ''}`
       }
     }
 

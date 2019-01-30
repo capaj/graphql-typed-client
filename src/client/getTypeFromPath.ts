@@ -1,9 +1,13 @@
 import { SchemaSpec } from './getSchemaSpec'
 
-export const getTypeFromPath = (schemaSpec: SchemaSpec, root: string, path: string[]): string => {
+export const getTypeFromPath = (
+  schemaSpec: SchemaSpec,
+  root: string,
+  path: string[]
+): string => {
   let t = root
 
-  path.forEach(f => {
+  path.forEach((f) => {
     if (!schemaSpec.types[t]) {
       throw new Error(`unknown type ${t}`)
     }

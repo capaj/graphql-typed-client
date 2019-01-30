@@ -8,7 +8,7 @@ export class ScalarType extends Type {
     Float: 'number',
     String: 'string',
     Boolean: 'boolean',
-    ID: 'string',
+    ID: 'string'
   }
 
   toTSType() {

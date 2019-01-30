@@ -6,7 +6,7 @@ export enum Kind {
   ENUM = 'ENUM',
   INPUT_OBJECT = 'INPUT_OBJECT',
   LIST = 'LIST',
-  NON_NULL = 'NON_NULL',
+  NON_NULL = 'NON_NULL'
 }
 
 export interface TypeDef {

@@ -1,20 +1,17 @@
-import fs from 'fs'
-import path from 'path'
 import { request } from './request'
 import {
   RequestOptionsFn,
   defaultRequestOptionsFn,
   generateClient
 } from './generateClient'
+import getSchemaQuery from '../../queries/getSchemaQuery'
 
 export const fetchSchemaAndGenerateClient = async (
   endpoint: string,
   outputDir: string,
   requestOptionsFn: RequestOptionsFn = defaultRequestOptionsFn
 ) => {
-  const query = fs
-    .readFileSync(path.resolve(__dirname, '../../queries/schemaQuery.graphql'))
-    .toString()
+  const query = getSchemaQuery()
   const response = await request(requestOptionsFn(query, endpoint))
   if (!response.data || !response.data.__schema) {
     console.log(

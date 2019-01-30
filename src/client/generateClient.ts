@@ -5,15 +5,15 @@ import mkdirp from 'mkdirp'
 import { CoreOptions, UriOptions } from 'request'
 import rimraf from 'rimraf'
 
-import { request } from './request'
 import { Schema } from '../types/Schema'
+import { SchemaDef } from '../definitions'
 
-type RequestOptionsFn = (
+export type RequestOptionsFn = (
   query: string,
   endpoint: string
 ) => CoreOptions & UriOptions
 
-const defaultRequestOptionsFn: RequestOptionsFn = (query, endpoint) => ({
+export const defaultRequestOptionsFn: RequestOptionsFn = (query, endpoint) => ({
   method: 'GET',
   uri: endpoint,
   qs: { query },
@@ -28,14 +28,7 @@ const prettify = (code: string): string =>
     trailingComma: 'all'
   })
 
-export const generateClient = async (
-  endpoint: string,
-  outputDir: string,
-  requestOptionsFn: RequestOptionsFn = defaultRequestOptionsFn
-) => {
-  const query = fs
-    .readFileSync(path.resolve(__dirname, '../../queries/schemaQuery.graphql'))
-    .toString()
+export function generateClient(rawSchema: SchemaDef, outputDir: string) {
   const clientTemplate = fs
     .readFileSync(path.resolve(__dirname, '../../dist/templates/GqlClient.js'))
     .toString()
@@ -46,16 +39,7 @@ export const generateClient = async (
     .toString()
   const packageName = require('../../package.json').name
 
-  const response = await request(requestOptionsFn(query, endpoint))
-
-  if (!response.data || !response.data.__schema) {
-    console.log(
-      `Invalid response from endpoint:\n${JSON.stringify(response, null, 2)}`
-    )
-    return
-  }
-
-  const schema = new Schema(response.data.__schema)
+  const schema = new Schema(rawSchema)
 
   const results = [
     ...schema.types.map((t) => t.toTSType()),
@@ -149,6 +133,6 @@ export const generateClient = async (
   )
   fs.writeFileSync(
     path.resolve(outputDir, './schema.json'),
-    JSON.stringify(response.data.__schema)
+    JSON.stringify(rawSchema)
   )
 }

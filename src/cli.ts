@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import path from 'path'
-import { generateClient } from './client/generateClient'
+import { fetchSchemaAndGenerateClient } from './client/fetchSchemaAndGenerateClient'
 
 const binName = Object.keys(require('../package.json').bin)[0]
 
@@ -21,4 +21,6 @@ if (requestOptionsFnPath) {
   requestOptionsFn = require(path.resolve(requestOptionsFnPath))
 }
 
-generateClient(endpoint, outputDir, requestOptionsFn).catch(console.log)
+fetchSchemaAndGenerateClient(endpoint, outputDir, requestOptionsFn).catch(
+  console.log
+)

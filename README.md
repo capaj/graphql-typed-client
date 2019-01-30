@@ -96,6 +96,21 @@ then run the command
 generate-graphql-client https://api.github.com/graphql ./github-client ./githubClientQuery.js
 ```
 
+### Programmatic generation
+
+Alternatively if you have your schema developed locally, you can use it directly to generate the client without goin over the network, for example:
+
+```ts
+import { generateClient, getSchemaQuery } from 'graphql-typed-client'
+;(async () => {
+  const { data } = await graphql({
+    source: getSchemaQuery(),
+    schema: myGraphQLSchema // <-- your own GQL schema
+  })
+  generateClient(data.__schema, './myGraphQLSchemaClient')
+})()
+```
+
 ## Instantiate the client
 
 ```typescript
